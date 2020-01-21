@@ -1,0 +1,293 @@
+import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Label;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferStrategy;
+
+import javax.swing.JFrame;
+
+public class game extends Canvas implements KeyListener, ActionListener, MouseListener, MouseMotionListener, Runnable {
+
+	public static int sizex=400;
+	public static int sizey=400;
+	static JFrame jf;
+	Thread t1;
+    Font f;
+	boolean running= false, gameover=false;
+	Graphics g;
+	int score = 0;
+	int x=0,y=0,velx=3,vely=1, ry = 100, radius=30;
+	int plystickx=10, plysticky=80;
+	int maxvely=3;
+	public void tick ()
+	
+	
+	
+	{
+		
+	    BufferStrategy bs= getBufferStrategy();
+		if ( bs== null)
+		{ 
+			
+			createBufferStrategy(3);
+		    return;
+		}
+		
+		Graphics g=bs.getDrawGraphics();
+		g.setColor(Color.black);
+		g.fillRect(0, 0, sizex, sizey);
+		x+=velx;
+		y+=vely;
+		if (x+radius+10>sizex) {velx=velx*(-1);}
+		if (y+radius*2>sizey) {vely=vely*(-1);}
+		if (x<0) {velx=velx*(-1);}
+		if (y<0) {vely=vely*(-1);}
+		
+		
+		g.setColor(Color.red);
+		g.fillOval(x, y, radius, radius);
+		g.setColor(Color.blue);
+		g.fillRect(10, ry, plystickx, plysticky);
+		
+		f = g.getFont();
+	    g.setFont(new Font(f.getName(), Font.BOLD, 24));
+		
+		
+		String scores=score+"";
+		g.drawString("SCORE", sizex-100, 50);
+		g.drawString(scores, sizex-60, 80);
+		if ( x>radius/2 && x<5+radius/2) {
+			if(y>ry-radius && y<ry+plysticky)
+			{
+				score++;
+				//vely=vely*-1;
+				//velx=velx*-1;
+			    
+				if (velx<0) {
+					int hitpoint=y-ry;
+					velx=-1*velx;
+					double mult= hitpoint/(plysticky/maxvely);
+					double velend=velx*mult;
+				    velend=Math.sqrt(velend); 
+				    vely= (int) velend;
+				}
+				
+				if (velx>=0) {
+					int hitpoint=ry+plysticky-y;
+					double mult= hitpoint/(plysticky/maxvely);
+					double velend=velx*mult;
+				    velend=Math.sqrt(velend); 
+				    vely= -1*(int) velend;
+				}
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+			
+			
+			}
+		
+			
+			
+		
+		}
+		
+		
+		
+		
+		
+		if ( x<-5+radius/2 && velx<0) {
+			x=0;
+			y=0;
+		    velx=0;
+		    vely=0;
+		
+			gameover=true;
+				
+		}	
+		
+		if (gameover){
+			f = g.getFont();
+		    g.setFont(new Font(f.getName(), Font.BOLD, 24));
+			
+			g.drawString("GAME OVER", sizex/2, sizey/2);
+			g.drawString("PRESS W", sizex/2, 60+sizey/2);     
+					
+		}
+		
+		g.dispose();
+		bs.show();
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public void run() {
+		
+	    //******
+		double speed=1;
+		double unprocessed = 0.0;
+		double nsPerTick= 1000000000/60;
+		long lastTime= System.nanoTime();
+		
+		int tps=0;
+		
+		while (running) {
+			long now= System.nanoTime();
+			unprocessed += (now- lastTime)/nsPerTick;	
+			lastTime=now;
+			
+			
+		
+			
+			if (unprocessed >= speed) {
+			tick();
+			unprocessed =unprocessed-speed;
+			tps ++;
+			
+			
+			}
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {			
+				e.printStackTrace();
+			}
+			
+			
+			
+			
+			
+		}
+		
+		
+		
+				
+		
+		
+		
+		
+		stop(); 
+	}
+	
+	void stop() {
+		
+		
+		
+		
+		
+		
+	    if (running == false) {return;}
+		if (running == true) {
+	    running = false;
+		try {
+			t1.join();
+		} catch (InterruptedException e) {e.printStackTrace();}
+		
+		
+		
+		}
+		
+	}
+	
+	
+	void start() {
+		
+	    if (running == true) {return;}
+		if (running == false) {
+	    running = true;
+		t1= new Thread(this);
+		t1.start();
+		}
+	}
+	
+	
+	
+	
+	
+	game()
+	
+	
+	
+	{
+		addKeyListener(this);
+        
+		
+	}
+	
+	
+	
+	
+	
+	public static void main(String[] args) {
+
+		jf=new JFrame("LUTFU");
+		game g1=new game();
+		jf.add(g1);
+		
+		jf.setSize(sizex, sizey);
+		jf.setResizable(false);
+		jf.setDefaultCloseOperation(jf.EXIT_ON_CLOSE);
+		jf.setLocationRelativeTo(null);
+		jf.setFocusable(true);
+		jf.setVisible(true);
+		jf.requestFocus();
+		g1.start();
+	}
+
+	public void actionPerformed(ActionEvent e) {	}
+	
+	public void keyTyped(KeyEvent e) {	}
+	public void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_UP) {
+		ry=ry-10;	
+		}
+		
+		if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+			ry=ry+10;	
+			}
+			
+		if (e.getKeyCode() == KeyEvent.VK_W && gameover) {
+			velx=3;	
+		    vely=1;	
+		    gameover=false;
+		    score=0;
+		}
+		
+	}
+
+	public void keyReleased(KeyEvent e) {	}
+	
+	public void mouseClicked(MouseEvent e) {	}
+	public void mousePressed(MouseEvent e) {	}
+	public void mouseReleased(MouseEvent e) {	}
+	public void mouseEntered(MouseEvent e) {	}
+	public void mouseExited(MouseEvent e) {   }
+
+	public void mouseDragged(MouseEvent e) {	}
+	public void mouseMoved(MouseEvent e) {	}
+
+}
